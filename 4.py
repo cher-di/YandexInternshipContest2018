@@ -17,7 +17,7 @@ def will_be_fully_connected(new_vertex: int, vertexes: set, edges: frozenset) ->
     return True
 
 
-def merge_commands(team_a1: set, team_b1: set, team_a2: set, team_b2: set, edges: frozenset):
+def merge_commands(team_a1: set, team_b1: set, team_a2: set, team_b2: set, edges: frozenset) -> bool:
     def can_be_merged(team1, team2):
         for player in team2:
             if not will_be_fully_connected(player, team1, edges):
@@ -35,6 +35,10 @@ def merge_commands(team_a1: set, team_b1: set, team_a2: set, team_b2: set, edges
     if can_be_merged(team_b1, team_b2):
         b2_available_commands.add(team_b1)
 
+    if not a2_available_commands or not b2_available_commands or \
+            (len(a2_available_commands) == 1 and a2_available_commands == b2_available_commands):
+        return False
+
     if len(a2_available_commands) <= len(b2_available_commands):
         chosen_command = choice(tuple(a2_available_commands))
         chosen_command.union(team_a2)
@@ -45,6 +49,8 @@ def merge_commands(team_a1: set, team_b1: set, team_a2: set, team_b2: set, edges
         chosen_command.union(team_b2)
         left_command = team_a1 if team_a1 != chosen_command else team_b1
         left_command.union(team_a2)
+
+    return True
 
 
 def make_commands(people: set, edges: frozenset, good_teams_result=True) -> tuple:
@@ -85,7 +91,9 @@ def make_commands(people: set, edges: frozenset, good_teams_result=True) -> tupl
     else:
         if left_players:
             team_a2, team_b2, result = make_commands(left_players, edges, good_teams)
-            merge_commands(team_a, team_b, team_a2, team_b2, edges)
+            merge_result = merge_commands(team_a, team_b, team_a2, team_b2, edges)
+            if not merge_result:
+                return None, None, False
         return team_a, team_b, True
 
 
